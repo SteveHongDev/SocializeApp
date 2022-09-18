@@ -200,7 +200,7 @@ class CommunityContentsDetailViewController: UIViewController {
         }
     }
     
-    private func loadCommentsData() {
+    private func loadCommentsData(completion: @escaping () -> ()) {
         self.postComments = [PostComment]()
         
         let docRef = db.collection("\(self.communityName)Room").document("\(self.contentTime)-\(contentEmail)").collection("comments")
@@ -225,6 +225,8 @@ class CommunityContentsDetailViewController: UIViewController {
                     print(error)
                 }
             }
+            
+            completion()
         }
     }
     
@@ -277,20 +279,14 @@ class CommunityContentsDetailViewController: UIViewController {
             "commentCount" : self.postInfo.commentCount! + 1
         ])
         
-        DispatchQueue.main.async {
-            self.loadCommentsData()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        self.loadCommentsData {
             self.commentsTableView.reloadData()
         }
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        DispatchQueue.main.async {
-            self.loadContentsData()
-            self.loadCommentsData()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        self.loadContentsData()
+        self.loadCommentsData {
             self.isMyPostOrNot()
             for likeUser in self.likeUsers {
                 if likeUser.email == self.user.email! {
@@ -361,13 +357,9 @@ extension CommunityContentsDetailViewController: CommentCellDelegate {
                 if let err = err {
                     print("Error removing document: \(err)")
                 } else {
-                    DispatchQueue.main.async {
-                        self.loadCommentsData()
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    self.loadCommentsData {
                         self.commentsTableView.reloadData()
                     }
-                    
                 }
             }
         }))

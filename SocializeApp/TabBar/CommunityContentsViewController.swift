@@ -26,15 +26,12 @@ class CommunityContentsViewController: UIViewController {
         
         communityNameLabel.text = communityName
         contentsTableView.refreshControl = refreshControl
-        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
+//        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
 
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        DispatchQueue.main.async {
-            self.loadCommunityData()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        self.loadCommunityData {
             self.contentsTableView.reloadData()
         }
     }
@@ -59,16 +56,13 @@ class CommunityContentsViewController: UIViewController {
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if refreshControl.isRefreshing {
             self.refreshControl.endRefreshing()
-            DispatchQueue.main.async {
-                self.loadCommunityData()
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.loadCommunityData {
                 self.contentsTableView.reloadData()
             }
         }
     }
     
-    private func loadCommunityData() {
+    private func loadCommunityData(completion: @escaping () -> ()) {
         
         posts = [Post]()
         
@@ -96,7 +90,11 @@ class CommunityContentsViewController: UIViewController {
                     print(error)
                 }
             }
+            
+            completion()
         }
+        
+        
     }
 
 }
