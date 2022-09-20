@@ -31,9 +31,7 @@ class CommunityContentsViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        self.loadCommunityData {
-            self.contentsTableView.reloadData()
-        }
+        self.loadCommunityData()
     }
     
     @objc func refresh() {
@@ -56,13 +54,11 @@ class CommunityContentsViewController: UIViewController {
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if refreshControl.isRefreshing {
             self.refreshControl.endRefreshing()
-            self.loadCommunityData {
-                self.contentsTableView.reloadData()
-            }
+            self.loadCommunityData()
         }
     }
     
-    private func loadCommunityData(completion: @escaping () -> ()) {
+    private func loadCommunityData() {
         
         posts = [Post]()
         
@@ -91,10 +87,10 @@ class CommunityContentsViewController: UIViewController {
                 }
             }
             
-            completion()
+            DispatchQueue.main.async {
+                self.contentsTableView.reloadData()
+            }
         }
-        
-        
     }
 
 }

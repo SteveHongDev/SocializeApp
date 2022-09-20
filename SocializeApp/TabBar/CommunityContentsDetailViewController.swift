@@ -149,6 +149,16 @@ class CommunityContentsDetailViewController: UIViewController {
             } else {
                 print("Document does not exist")
             }
+            
+            DispatchQueue.main.async {
+                self.isMyPostOrNot()
+                for likeUser in self.likeUsers {
+                    if likeUser.email == self.user.email! {
+                        self.likeButton.isSelected = true
+                        break
+                    }
+                }
+            }
         }
         
         let userRef = self.db.collection("users").document("\(self.contentEmail)")
@@ -200,7 +210,7 @@ class CommunityContentsDetailViewController: UIViewController {
         }
     }
     
-    private func loadCommentsData(completion: @escaping () -> ()) {
+    private func loadCommentsData() {
         self.postComments = [PostComment]()
         
         let docRef = db.collection("\(self.communityName)Room").document("\(self.contentTime)-\(contentEmail)").collection("comments")
@@ -226,7 +236,9 @@ class CommunityContentsDetailViewController: UIViewController {
                 }
             }
             
-            completion()
+            DispatchQueue.main.async {
+                self.commentsTableView.reloadData()
+            }
         }
     }
     
@@ -279,20 +291,14 @@ class CommunityContentsDetailViewController: UIViewController {
             "commentCount" : self.postInfo.commentCount! + 1
         ])
         
-        self.loadCommentsData {
-            self.commentsTableView.reloadData()
-        }
+        self.loadCommentsData()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         self.loadContentsData()
-        self.loadCommentsData {
-            self.isMyPostOrNot()
-            for likeUser in self.likeUsers {
-                if likeUser.email == self.user.email! {
-                    self.likeButton.isSelected = true
-                }
-            }
+        self.loadCommentsData()
+        
+        DispatchQueue.main.async {
             self.commentsTableView.reloadData()
         }
     }
@@ -357,9 +363,7 @@ extension CommunityContentsDetailViewController: CommentCellDelegate {
                 if let err = err {
                     print("Error removing document: \(err)")
                 } else {
-                    self.loadCommentsData {
-                        self.commentsTableView.reloadData()
-                    }
+                    self.loadCommentsData()
                 }
             }
         }))
